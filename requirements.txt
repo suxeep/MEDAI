@@ -2,6 +2,6 @@ streamlit
 tensorflow==2.20.0
 numpy
 pandas
-scikit-learn==1.4.2
-pillow
+scikit-learn
 xgboost
+pillow
