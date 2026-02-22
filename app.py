@@ -37,12 +37,12 @@ st.markdown("AI-powered detection for Brain Tumor, Pneumonia, Diabetes, Heart & 
 # ==========================================
 @st.cache_resource
 def load_models():
-    pneumonia_model = tf.keras.models.load_model("pneumonia_model.h5")
-    brain_model = tf.keras.models.load_model("brain_tumor_model.h5")
-    diabetes_model = pickle.load(open("diabetes_model.pkl", "rb"))
-    heart_model = pickle.load(open("heart_model.pkl", "rb"))
-    kidney_model = pickle.load(open("kidney_model.pkl", "rb"))
-    kidney_encoders = pickle.load(open("kidney_encoders.pkl", "rb"))
+    pneumonia_model = tf.keras.models.load_model("models/pneumonia_model.h5")
+    brain_model = tf.keras.models.load_model("models/brain_tumor_model.h5")
+    diabetes_model = pickle.load(open("models/diabetes_model.pkl", "rb"))
+    heart_model = pickle.load(open("models/heart_model.pkl", "rb"))
+    kidney_model = pickle.load(open("models/kidney_model.pkl", "rb"))
+    kidney_encoders = pickle.load(open("models/kidney_encoders.pkl", "rb"))
     return pneumonia_model, brain_model, diabetes_model, heart_model, kidney_model, kidney_encoders
 
 pneumonia_model, brain_model, diabetes_model, heart_model, kidney_model, kidney_encoders = load_models()
@@ -331,5 +331,6 @@ elif disease == "Kidney Disease Prediction (CSV Upload)":
                 "kidney_results.csv",
                 "text/csv"
             )
+
 
             st.success("Kidney Prediction Completed ✔")
