@@ -13,9 +13,7 @@ st.set_page_config(page_title="MedAI - Multi Disease System", layout="wide")
 # ===============================
 st.markdown("""
 <style>
-.main {
-    background-color: #0E1117;
-}
+.main { background-color: #0E1117; }
 .stButton>button {
     background-color: #6C63FF;
     color: white;
@@ -24,9 +22,7 @@ st.markdown("""
     height: 3em;
     width: 100%;
 }
-.stButton>button:hover {
-    background-color: #574fd6;
-}
+.stButton>button:hover { background-color: #574fd6; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -34,11 +30,8 @@ st.title("🧠 MedAI - Multi Disease Early Screening System")
 st.markdown("AI-powered detection for Brain Tumor, Pneumonia, Diabetes, Heart & Kidney Disease")
 
 # ==========================================
-# Load Models
+# Load Models (PRODUCTION SAFE PATHS)
 # ==========================================
-@st.cache_resource
-
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 
@@ -99,59 +92,33 @@ st.sidebar.info("MedAI 🚀")
 if disease == "Brain Tumor Detection":
 
     st.header("🧠 Brain Tumor Detection - MRI Dashboard")
+    files = st.file_uploader("Upload MRI Images", type=["jpg","jpeg","png"], accept_multiple_files=True)
 
-    files = st.file_uploader(
-        "Upload MRI Images",
-        type=["jpg", "jpeg", "png"],
-        accept_multiple_files=True
-    )
+    if files and st.button("Submit for Brain Tumor Prediction"):
 
-    if files:
-        if st.button("Submit for Brain Tumor Prediction"):
+        results = []
+        progress = st.progress(0)
 
-            results = []
-            progress = st.progress(0)
+        for i, file in enumerate(files):
+            img = Image.open(file).convert("RGB").resize((224,224))
+            img_array = np.array(img)/255.0
+            img_array = np.expand_dims(img_array, axis=0)
 
-            for i, file in enumerate(files):
-                img = Image.open(file).convert("RGB").resize((224, 224))
-                img_array = np.array(img) / 255.0
-                img_array = np.expand_dims(img_array, axis=0)
+            prediction = brain_model.predict(img_array)[0][0]
+            label = "Tumor" if prediction > 0.5 else "No Tumor"
+            confidence = prediction if prediction > 0.5 else 1-prediction
 
-                prediction = brain_model.predict(img_array)[0][0]
-                label = "Tumor" if prediction > 0.5 else "No Tumor"
-                confidence = prediction if prediction > 0.5 else 1 - prediction
+            results.append({
+                "File Name": file.name,
+                "Prediction": label,
+                "Confidence": round(float(confidence),3)
+            })
 
-                results.append({
-                    "File Name": file.name,
-                    "Prediction": label,
-                    "Confidence": round(float(confidence), 3)
-                })
+            progress.progress((i+1)/len(files))
 
-                progress.progress((i + 1) / len(files))
-
-            df_results = pd.DataFrame(results)
-            st.dataframe(df_results)
-
-            col1, col2 = st.columns(2)
-            tumor_count = sum(r["Prediction"] == "Tumor" for r in results)
-
-            with col1:
-                st.metric("Total Images", len(results))
-            with col2:
-                st.metric("Tumor Detected", tumor_count)
-
-            st.subheader("Prediction Distribution")
-            st.bar_chart(df_results["Prediction"].value_counts())
-
-            st.subheader("Confidence Levels")
-            st.bar_chart(df_results.set_index("File Name")["Confidence"])
-
-            st.download_button(
-                "Download Results",
-                df_results.to_csv(index=False),
-                "brain_tumor_results.csv",
-                "text/csv"
-            )
+        df_results = pd.DataFrame(results)
+        st.dataframe(df_results)
+        st.bar_chart(df_results["Prediction"].value_counts())
 
 # =========================================================
 # 🫁 PNEUMONIA
@@ -159,56 +126,33 @@ if disease == "Brain Tumor Detection":
 elif disease == "Pneumonia Detection":
 
     st.header("🫁 Pneumonia Detection Dashboard")
+    files = st.file_uploader("Upload X-ray Images", type=["jpg","jpeg","png"], accept_multiple_files=True)
 
-    files = st.file_uploader(
-        "Upload X-ray Images",
-        type=["jpg", "jpeg", "png"],
-        accept_multiple_files=True
-    )
+    if files and st.button("Submit for Pneumonia Prediction"):
 
-    if files:
-        if st.button("Submit for Pneumonia Prediction"):
+        results = []
+        progress = st.progress(0)
 
-            results = []
-            progress = st.progress(0)
+        for i, file in enumerate(files):
+            img = Image.open(file).convert("RGB").resize((224,224))
+            img_array = np.array(img)/255.0
+            img_array = np.expand_dims(img_array, axis=0)
 
-            for i, file in enumerate(files):
-                img = Image.open(file).convert("RGB").resize((224, 224))
-                img_array = np.array(img) / 255.0
-                img_array = np.expand_dims(img_array, axis=0)
+            prediction = pneumonia_model.predict(img_array)[0][0]
+            label = "Pneumonia" if prediction > 0.5 else "Normal"
+            confidence = prediction if prediction > 0.5 else 1-prediction
 
-                prediction = pneumonia_model.predict(img_array)[0][0]
-                label = "Pneumonia" if prediction > 0.5 else "Normal"
-                confidence = prediction if prediction > 0.5 else 1 - prediction
+            results.append({
+                "File Name": file.name,
+                "Prediction": label,
+                "Confidence": round(float(confidence),3)
+            })
 
-                results.append({
-                    "File Name": file.name,
-                    "Prediction": label,
-                    "Confidence": round(float(confidence), 3)
-                })
+            progress.progress((i+1)/len(files))
 
-                progress.progress((i + 1) / len(files))
-
-            df_results = pd.DataFrame(results)
-            st.dataframe(df_results)
-
-            col1, col2 = st.columns(2)
-            pneumonia_count = sum(r["Prediction"] == "Pneumonia" for r in results)
-
-            with col1:
-                st.metric("Total Images", len(results))
-            with col2:
-                st.metric("Pneumonia Detected", pneumonia_count)
-
-            st.bar_chart(df_results["Prediction"].value_counts())
-            st.bar_chart(df_results.set_index("File Name")["Confidence"])
-
-            st.download_button(
-                "Download Results",
-                df_results.to_csv(index=False),
-                "pneumonia_results.csv",
-                "text/csv"
-            )
+        df_results = pd.DataFrame(results)
+        st.dataframe(df_results)
+        st.bar_chart(df_results["Prediction"].value_counts())
 
 # =========================================================
 # 🍬 DIABETES
@@ -216,43 +160,27 @@ elif disease == "Pneumonia Detection":
 elif disease == "Diabetes Prediction (CSV Upload)":
 
     st.header("🍬 Diabetes Risk Prediction")
-
     uploaded_csv = st.file_uploader("Upload Patient CSV", type=["csv"])
 
-    if uploaded_csv:
-        if st.button("Submit for Diabetes Prediction"):
+    if uploaded_csv and st.button("Submit for Diabetes Prediction"):
 
-            df = pd.read_csv(uploaded_csv)
+        df = pd.read_csv(uploaded_csv)
 
-            required_columns = [
-                "Pregnancies","Glucose","BloodPressure",
-                "SkinThickness","Insulin","BMI",
-                "DiabetesPedigreeFunction","Age"
-            ]
+        required_columns = [
+            "Pregnancies","Glucose","BloodPressure",
+            "SkinThickness","Insulin","BMI",
+            "DiabetesPedigreeFunction","Age"
+        ]
 
-            if not all(col in df.columns for col in required_columns):
-                st.error("CSV format incorrect.")
-                st.stop()
+        if not all(col in df.columns for col in required_columns):
+            st.error("CSV format incorrect.")
+            st.stop()
 
-            X = df[required_columns]
-            prob = diabetes_model.predict_proba(X)[:, 1]
+        X = df[required_columns]
+        prob = diabetes_model.predict_proba(X)[:,1]
 
-            df["Diabetes Risk"] = prob
-            df["Risk Level"] = df["Diabetes Risk"].apply(
-                lambda x: "High 🔴" if x > 0.7 else
-                          "Medium 🟡" if x > 0.4 else
-                          "Low 🟢"
-            )
-
-            st.dataframe(df)
-            st.bar_chart(df["Risk Level"].value_counts())
-
-            st.download_button(
-                "Download Results",
-                df.to_csv(index=False),
-                "diabetes_results.csv",
-                "text/csv"
-            )
+        df["Diabetes Risk"] = prob
+        st.dataframe(df)
 
 # =========================================================
 # 🫀 HEART
@@ -260,43 +188,27 @@ elif disease == "Diabetes Prediction (CSV Upload)":
 elif disease == "Heart Disease Prediction (CSV Upload)":
 
     st.header("🫀 Heart Disease Risk Prediction")
-
     uploaded_csv = st.file_uploader("Upload Patient CSV", type=["csv"])
 
-    if uploaded_csv:
-        if st.button("Submit for Heart Prediction"):
+    if uploaded_csv and st.button("Submit for Heart Prediction"):
 
-            df = pd.read_csv(uploaded_csv)
+        df = pd.read_csv(uploaded_csv)
 
-            required_columns = [
-                "age","sex","cp","trestbps","chol",
-                "fbs","restecg","thalach","exang",
-                "oldpeak","slope","ca","thal"
-            ]
+        required_columns = [
+            "age","sex","cp","trestbps","chol",
+            "fbs","restecg","thalach","exang",
+            "oldpeak","slope","ca","thal"
+        ]
 
-            if not all(col in df.columns for col in required_columns):
-                st.error("CSV format incorrect.")
-                st.stop()
+        if not all(col in df.columns for col in required_columns):
+            st.error("CSV format incorrect.")
+            st.stop()
 
-            X = df[required_columns]
-            prob = heart_model.predict_proba(X)[:, 1]
+        X = df[required_columns]
+        prob = heart_model.predict_proba(X)[:,1]
 
-            df["Heart Risk"] = prob
-            df["Risk Level"] = df["Heart Risk"].apply(
-                lambda x: "High 🔴" if x > 0.7 else
-                          "Medium 🟡" if x > 0.4 else
-                          "Low 🟢"
-            )
-
-            st.dataframe(df)
-            st.bar_chart(df["Risk Level"].value_counts())
-
-            st.download_button(
-                "Download Results",
-                df.to_csv(index=False),
-                "heart_results.csv",
-                "text/csv"
-            )
+        df["Heart Risk"] = prob
+        st.dataframe(df)
 
 # =========================================================
 # 🧪 KIDNEY
@@ -304,63 +216,33 @@ elif disease == "Heart Disease Prediction (CSV Upload)":
 elif disease == "Kidney Disease Prediction (CSV Upload)":
 
     st.header("🧪 Chronic Kidney Disease Prediction")
-
     uploaded_csv = st.file_uploader("Upload Kidney CSV", type=["csv"])
 
-    if uploaded_csv:
-        if st.button("Submit for Kidney Prediction"):
+    if uploaded_csv and st.button("Submit for Kidney Prediction"):
 
-            df = pd.read_csv(uploaded_csv)
+        df = pd.read_csv(uploaded_csv)
 
-            # Clean missing values
-            df.replace("?", np.nan, inplace=True)
-            df = df.fillna(df.mode().iloc[0])
+        df.replace("?", np.nan, inplace=True)
+        df = df.fillna(df.mode().iloc[0])
 
-            if "id" in df.columns:
-                df = df.drop("id", axis=1)
+        if "id" in df.columns:
+            df = df.drop("id", axis=1)
 
-            # Safe encoding
-            for col in kidney_encoders:
-                if col in df.columns:
-                    le = kidney_encoders[col]
+        # Drop target column first (FIXED)
+        if "classification" in df.columns:
+            df = df.drop("classification", axis=1)
 
-                    # Handle unseen labels
-                    df[col] = df[col].apply(
-                        lambda x: x if x in le.classes_ else le.classes_[0]
-                    )
+        # Encode categorical safely
+        for col in kidney_encoders:
+            if col in df.columns:
+                le = kidney_encoders[col]
+                df[col] = df[col].apply(
+                    lambda x: x if x in le.classes_ else le.classes_[0]
+                )
+                df[col] = le.transform(df[col])
 
-                    df[col] = le.transform(df[col])
+        probabilities = kidney_model.predict_proba(df)[:,1]
+        df["Kidney Disease Risk"] = probabilities
 
-           
-            # Drop target column if present
-                if "classification" in df.columns:
-                    df = df.drop("classification", axis=1)
-
-            probabilities = kidney_model.predict_proba(df)[:, 1]
-            
-            
-            
-            df["Kidney Disease Risk"] = probabilities
-            df["Risk Level"] = df["Kidney Disease Risk"].apply(
-                lambda x: "High 🔴" if x > 0.7 else
-                          "Medium 🟡" if x > 0.4 else
-                          "Low 🟢"
-            )
-
-            st.dataframe(df)
-
-            st.subheader("Risk Distribution")
-            st.bar_chart(df["Risk Level"].value_counts())
-
-            st.download_button(
-                "Download Results",
-                df.to_csv(index=False),
-                "kidney_results.csv",
-                "text/csv"
-            )
-
-
-            st.success("Kidney Prediction Completed ✔")
-
-
-
+        st.dataframe(df)
+        st.success("Kidney Prediction Completed ✔")
