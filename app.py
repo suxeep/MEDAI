@@ -36,14 +36,43 @@ st.markdown("AI-powered detection for Brain Tumor, Pneumonia, Diabetes, Heart & 
 # Load Models
 # ==========================================
 @st.cache_resource
+import os
+import pickle
+import tensorflow as tf
+import streamlit as st
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
+
+@st.cache_resource
 def load_models():
-    pneumonia_model = tf.keras.models.load_model("models/pneumonia_model.h5")
-    brain_model = tf.keras.models.load_model("models/brain_tumor_model.h5")
-    diabetes_model = pickle.load(open("models/diabetes_model.pkl", "rb"))
-    heart_model = pickle.load(open("models/heart_model.pkl", "rb"))
-    kidney_model = pickle.load(open("models/kidney_model.pkl", "rb"))
-    kidney_encoders = pickle.load(open("models/kidney_encoders.pkl", "rb"))
+
+    pneumonia_model = tf.keras.models.load_model(
+        os.path.join(MODEL_DIR, "pneumonia_model.h5")
+    )
+
+    brain_model = tf.keras.models.load_model(
+        os.path.join(MODEL_DIR, "brain_tumor_model.h5")
+    )
+
+    diabetes_model = pickle.load(
+        open(os.path.join(MODEL_DIR, "diabetes_model.pkl"), "rb")
+    )
+
+    heart_model = pickle.load(
+        open(os.path.join(MODEL_DIR, "heart_model.pkl"), "rb")
+    )
+
+    kidney_model = pickle.load(
+        open(os.path.join(MODEL_DIR, "kidney_model.pkl"), "rb")
+    )
+
+    kidney_encoders = pickle.load(
+        open(os.path.join(MODEL_DIR, "kidney_encoders.pkl"), "rb")
+    )
+
     return pneumonia_model, brain_model, diabetes_model, heart_model, kidney_model, kidney_encoders
+
 
 pneumonia_model, brain_model, diabetes_model, heart_model, kidney_model, kidney_encoders = load_models()
 
@@ -334,3 +363,4 @@ elif disease == "Kidney Disease Prediction (CSV Upload)":
 
 
             st.success("Kidney Prediction Completed ✔")
+
