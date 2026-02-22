@@ -5,9 +5,7 @@ import pandas as pd
 import pickle
 from PIL import Image
 import os
-import pickle
-import tensorflow as tf
-import streamlit as st
+
 st.set_page_config(page_title="MedAI - Multi Disease System", layout="wide")
 
 # ===============================
@@ -39,10 +37,7 @@ st.markdown("AI-powered detection for Brain Tumor, Pneumonia, Diabetes, Heart & 
 # Load Models
 # ==========================================
 @st.cache_resource
-import os
-import pickle
-import tensorflow as tf
-import streamlit as st
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -366,5 +361,6 @@ elif disease == "Kidney Disease Prediction (CSV Upload)":
 
 
             st.success("Kidney Prediction Completed ✔")
+
 
 
